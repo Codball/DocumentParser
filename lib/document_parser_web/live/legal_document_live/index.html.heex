@@ -1,0 +1,42 @@
+<.header>
+  Listing Legal documents
+  <:actions>
+    <.link patch={~p"/legal_documents/new"}>
+      <.button>New Legal document</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="legal_documents"
+  rows={@streams.legal_documents}
+  row_click={fn {_id, legal_document} -> JS.navigate(~p"/legal_documents/#{legal_document}") end}
+>
+  <:col :let={{_id, legal_document}} label="File name"><%= legal_document.file_name %></:col>
+  <:col :let={{_id, legal_document}} label="Parsed strings"><%= legal_document.parsed_strings %></:col>
+  <:action :let={{_id, legal_document}}>
+    <div class="sr-only">
+      <.link navigate={~p"/legal_documents/#{legal_document}"}>Show</.link>
+    </div>
+    <.link patch={~p"/legal_documents/#{legal_document}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{id, legal_document}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: legal_document.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal :if={@live_action in [:new, :edit]} id="legal_document-modal" show on_cancel={JS.patch(~p"/legal_documents")}>
+  <.live_component
+    module={DocumentParserWeb.LegalDocumentLive.FormComponent}
+    id={@legal_document.id || :new}
+    title={@page_title}
+    action={@live_action}
+    legal_document={@legal_document}
+    patch={~p"/legal_documents"}
+  />
+</.modal>

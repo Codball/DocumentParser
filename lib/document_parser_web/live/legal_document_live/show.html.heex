@@ -1,0 +1,27 @@
+<.header>
+  Legal document <%= @legal_document.id %>
+  <:subtitle>This is a legal_document record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"/legal_documents/#{@legal_document}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit legal_document</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title="File name"><%= @legal_document.file_name %></:item>
+  <:item title="Parsed strings"><%= @legal_document.parsed_strings %></:item>
+</.list>
+
+<.back navigate={~p"/legal_documents"}>Back to legal_documents</.back>
+
+<.modal :if={@live_action == :edit} id="legal_document-modal" show on_cancel={JS.patch(~p"/legal_documents/#{@legal_document}")}>
+  <.live_component
+    module={DocumentParserWeb.LegalDocumentLive.FormComponent}
+    id={@legal_document.id}
+    title={@page_title}
+    action={@live_action}
+    legal_document={@legal_document}
+    patch={~p"/legal_documents/#{@legal_document}"}
+  />
+</.modal>
