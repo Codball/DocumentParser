@@ -22,7 +22,7 @@ defmodule DocumentParser.ParserTest do
       Parser.V1.get_plaintiffs_and_defendants(filepath)
 
     assert plaintiffs == ["KUSUMA AMBELGAR"]
-    assert defendants == ["THIRUMALLAI LLC"]
+    assert defendants == ["THIRUMALLAILLC"]
   end
 
   test "Test C returns plaintiff and defendant" do

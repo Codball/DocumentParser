@@ -9,3 +9,8 @@
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
+
+["COMPLAINT", "FOR", "DAMAGES"]
+|> Enum.each(fn word ->
+  DocumentParser.Repo.insert!(%DocumentParser.FilterPhrases.FilterPhrase{word: word, enabled: true})
+end)
