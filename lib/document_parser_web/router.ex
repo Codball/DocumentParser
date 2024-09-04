@@ -18,6 +18,20 @@ defmodule DocumentParserWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+
+    live "/legal_documents", LegalDocumentLive.Index, :index
+    live "/legal_documents/new", LegalDocumentLive.Index, :new
+    live "/legal_documents/:id/edit", LegalDocumentLive.Index, :edit
+
+    live "/legal_documents/:id", LegalDocumentLive.Show, :show
+    live "/legal_documents/:id/show/edit", LegalDocumentLive.Show, :edit
+
+    live "/filter_phrases", FilterPhraseLive.Index, :index
+    live "/filter_phrases/new", FilterPhraseLive.Index, :new
+    live "/filter_phrases/:id/edit", FilterPhraseLive.Index, :edit
+
+    live "/filter_phrases/:id", FilterPhraseLive.Show, :show
+    live "/filter_phrases/:id/show/edit", FilterPhraseLive.Show, :edit
   end
 
   # Other scopes may use custom stacks.
