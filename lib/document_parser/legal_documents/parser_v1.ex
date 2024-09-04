@@ -7,6 +7,8 @@ defmodule DocumentParser.LegalDocuments.Parser.V1 do
     ~c"v."
   ]
 
+  @max_search_breadth 15
+
   @moduledoc """
   Provides functions to extract and identify plaintiffs and defendants from a list of character lists or a file.
 
@@ -38,9 +40,11 @@ defmodule DocumentParser.LegalDocuments.Parser.V1 do
   """
 
   @spec get_plaintiffs_and_defendants(list(char()) | String.t(), map()) :: %{
+          charlists: list(char()),
           plaintiffs: list(String.t()),
           defendants: list(String.t()),
-          charlists: list(char())
+          plaintiff_search_breadth: integer(),
+          defendant_search_breadth: integer()
         }
   def get_plaintiffs_and_defendants(charlists_or_filepath, opts \\ %{})
 
@@ -56,10 +60,7 @@ defmodule DocumentParser.LegalDocuments.Parser.V1 do
   defp process_charlists(charlists, opts) do
     midpoint_index = find_opponent_midpoint_index(charlists)
 
-    %{plaintiffs: plaintiffs, defendants: defendants} =
-      find_plaintiffs_and_defendants(charlists, midpoint_index, opts)
-
-    %{plaintiffs: plaintiffs, defendants: defendants, charlists: charlists}
+    find_plaintiffs_and_defendants(charlists, midpoint_index, opts)
   end
 
   defp read_file(filepath) do
@@ -80,17 +81,45 @@ defmodule DocumentParser.LegalDocuments.Parser.V1 do
     filter_phrases = DocumentParser.FilterPhrases.list_enabled_filter_phrases()
 
     plaintiff_search_breadth = Map.get(opts, :plaintiff_search_breadth_override, 1)
-    plaintiffs =
-      find_opponents(charlists, midpoint_index, filter_phrases, :plaintiff, plaintiff_search_breadth)
+
+    {plaintiffs, attempted_plaintiff_search_breadth} =
+      find_opponents(
+        charlists,
+        midpoint_index,
+        filter_phrases,
+        :plaintiff,
+        plaintiff_search_breadth
+      )
 
     defendant_search_breadth = Map.get(opts, :defendant_search_breadth_override, 1)
-    defendants =
-      find_opponents(charlists, midpoint_index, filter_phrases, :defendant, defendant_search_breadth)
 
-    %{plaintiffs: plaintiffs, defendants: defendants}
+    {defendants, attempted_defendant_search_breadth} =
+      find_opponents(
+        charlists,
+        midpoint_index,
+        filter_phrases,
+        :defendant,
+        defendant_search_breadth
+      )
+
+    %{
+      charlists: charlists,
+      plaintiffs: plaintiffs,
+      defendants: defendants,
+      plaintiff_search_breadth: attempted_plaintiff_search_breadth,
+      defendant_search_breadth: attempted_defendant_search_breadth
+    }
   end
 
-  defp find_opponents(_charlists, _midpoint_index, _filter_phrases, _opponent_type, 15), do: []
+  defp find_opponents(
+         _charlists,
+         _midpoint_index,
+         _filter_phrases,
+         _opponent_type,
+         search_breadth
+       )
+       when search_breadth >= @max_search_breadth,
+       do: {[], search_breadth}
 
   defp find_opponents(charlists, midpoint_index, filter_phrases, opponent_type, search_breadth) do
     range = get_opponent_range(opponent_type, midpoint_index, search_breadth)
@@ -112,7 +141,7 @@ defmodule DocumentParser.LegalDocuments.Parser.V1 do
         )
 
       matches ->
-        matches
+        {matches, search_breadth}
     end
   end
 
