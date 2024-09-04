@@ -4,13 +4,21 @@ defmodule DocumentParserWeb.LegalDocumentLive.FormComponent do
   alias DocumentParser.LegalDocuments
 
   @impl true
+  def mount(socket) do
+    {:ok,
+     socket
+     |> allow_upload(:file, max_entries: 1, accept: ~w(.xml))}
+  end
+
+  @impl true
   def render(assigns) do
     ~H"""
     <div>
       <.header>
         <%= @title %>
-        <:subtitle>Use this form to manage legal_document records in your database.</:subtitle>
+        <:subtitle>Upload a file</:subtitle>
       </.header>
+
 
       <.simple_form
         for={@form}
@@ -19,8 +27,9 @@ defmodule DocumentParserWeb.LegalDocumentLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
+        <%!-- <label for={@uploads.file}>File</label> --%>
+        <.live_file_input upload={@uploads.file} />
         <.input field={@form[:file_name]} type="text" label="File name" />
-        <.input field={@form[:parsed_strings]} type="text" label="Parsed strings" />
         <:actions>
           <.button phx-disable-with="Saving...">Save Legal document</.button>
         </:actions>
@@ -65,6 +74,11 @@ defmodule DocumentParserWeb.LegalDocumentLive.FormComponent do
   end
 
   defp save_legal_document(socket, :new, legal_document_params) do
+    Phoenix.LiveView.consume_uploaded_entries(socket, :file, fn %{path: path}, entry ->
+      DocumentParser.LegalDocuments.Parser.V1.get_plaintiffs_and_defendants(path)
+      {:ok, entry}
+    end)
+
     case LegalDocuments.create_legal_document(legal_document_params) do
       {:ok, legal_document} ->
         notify_parent({:saved, legal_document})
