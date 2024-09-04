@@ -1,0 +1,42 @@
+<.header>
+  Listing Filter phrases
+  <:actions>
+    <.link patch={~p"/filter_phrases/new"}>
+      <.button>New Filter phrase</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="filter_phrases"
+  rows={@streams.filter_phrases}
+  row_click={fn {_id, filter_phrase} -> JS.navigate(~p"/filter_phrases/#{filter_phrase}") end}
+>
+  <:col :let={{_id, filter_phrase}} label="Word"><%= filter_phrase.word %></:col>
+  <:col :let={{_id, filter_phrase}} label="Enabled"><%= filter_phrase.enabled %></:col>
+  <:action :let={{_id, filter_phrase}}>
+    <div class="sr-only">
+      <.link navigate={~p"/filter_phrases/#{filter_phrase}"}>Show</.link>
+    </div>
+    <.link patch={~p"/filter_phrases/#{filter_phrase}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{id, filter_phrase}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: filter_phrase.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal :if={@live_action in [:new, :edit]} id="filter_phrase-modal" show on_cancel={JS.patch(~p"/filter_phrases")}>
+  <.live_component
+    module={DocumentParserWeb.FilterPhraseLive.FormComponent}
+    id={@filter_phrase.id || :new}
+    title={@page_title}
+    action={@live_action}
+    filter_phrase={@filter_phrase}
+    patch={~p"/filter_phrases"}
+  />
+</.modal>

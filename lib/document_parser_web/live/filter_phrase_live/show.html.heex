@@ -1,0 +1,27 @@
+<.header>
+  Filter phrase <%= @filter_phrase.id %>
+  <:subtitle>This is a filter_phrase record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"/filter_phrases/#{@filter_phrase}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit filter_phrase</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title="Word"><%= @filter_phrase.word %></:item>
+  <:item title="Enabled"><%= @filter_phrase.enabled %></:item>
+</.list>
+
+<.back navigate={~p"/filter_phrases"}>Back to filter_phrases</.back>
+
+<.modal :if={@live_action == :edit} id="filter_phrase-modal" show on_cancel={JS.patch(~p"/filter_phrases/#{@filter_phrase}")}>
+  <.live_component
+    module={DocumentParserWeb.FilterPhraseLive.FormComponent}
+    id={@filter_phrase.id}
+    title={@page_title}
+    action={@live_action}
+    filter_phrase={@filter_phrase}
+    patch={~p"/filter_phrases/#{@filter_phrase}"}
+  />
+</.modal>
