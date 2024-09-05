@@ -18,7 +18,9 @@ defmodule DocumentParser.LegalDocuments do
 
   """
   def list_legal_documents do
-    Repo.all(LegalDocument)
+    LegalDocument
+    |> preload([ld], [:plaintiffs, :defendants])
+    |> Repo.all()
   end
 
   @doc """
@@ -35,7 +37,12 @@ defmodule DocumentParser.LegalDocuments do
       ** (Ecto.NoResultsError)
 
   """
-  def get_legal_document!(id), do: Repo.get!(LegalDocument, id)
+  def get_legal_document!(id) do
+    LegalDocument
+    |> where([ld], ld.id == ^id)
+    |> preload([ld], [:plaintiffs, :defendants])
+    |> Repo.one!()
+  end
 
   @doc """
   Creates a legal_document.

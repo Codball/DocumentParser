@@ -13,7 +13,16 @@
   row_click={fn {_id, legal_document} -> JS.navigate(~p"/legal_documents/#{legal_document}") end}
 >
   <:col :let={{_id, legal_document}} label="File name"><%= legal_document.file_name %></:col>
-  <:col :let={{_id, legal_document}} label="Parsed strings"><%= legal_document.parsed_strings %></:col>
+  <:col :let={{_id, legal_document}} label="Plaintiffs">    
+    <%= for plaintiff <- legal_document.plaintiffs do %>
+      <p><%= plaintiff.name %></p>
+    <% end %>          
+  </:col>
+  <:col :let={{_id, legal_document}} label="Defendants">         
+    <%= for defendant <- legal_document.defendants do %>
+      <p><%= defendant.name %></p>
+    <% end %>
+  </:col>
   <:action :let={{_id, legal_document}}>
     <div class="sr-only">
       <.link navigate={~p"/legal_documents/#{legal_document}"}>Show</.link>

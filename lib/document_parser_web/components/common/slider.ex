@@ -19,12 +19,4 @@ defmodule DocumentParserWeb.Components.Common.Slider do
     </div>
     """
   end
-
-  def update(assigns, socket) do
-    {:ok,
-     socket
-     |> assign(:title, assigns[:title] || "Slider")
-     |> assign(:value, assigns[:value] || 10)
-     |> assign(:name, assigns[:name] || "name")}
-  end
 end

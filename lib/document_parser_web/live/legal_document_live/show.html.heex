@@ -10,7 +10,16 @@
 
 <.list>
   <:item title="File name"><%= @legal_document.file_name %></:item>
-  <:item title="Parsed strings"><%= @legal_document.parsed_strings %></:item>
+  <:item title="Plaintiffs">            
+    <%= for plaintiff <- @legal_document.plaintiffs do %>
+      <p><%= plaintiff.name %></p>
+    <% end %>
+  </:item>
+  <:item title="Defendants">            
+    <%= for defendant <- @legal_document.defendants do %>
+      <p><%= defendant.name %></p>
+    <% end %>
+  </:item>
 </.list>
 
 <.back navigate={~p"/legal_documents"}>Back to legal_documents</.back>

@@ -5,7 +5,8 @@ defmodule DocumentParser.Entity do
   schema "entities" do
     field :name, :string
     field :type, :string
-    field :legal_document_id, :id
+
+    belongs_to(:legal_document, DocumentParser.LegalDocuments.LegalDocument)
 
     timestamps(type: :utc_datetime)
   end
