@@ -17,5 +17,6 @@ defmodule DocumentParser.LegalDocumentsFixtures do
       |> DocumentParser.LegalDocuments.create_legal_document()
 
     legal_document
+    |> DocumentParser.Repo.preload([:plaintiffs, :defendants])
   end
 end

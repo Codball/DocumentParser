@@ -4,9 +4,11 @@ defmodule DocumentParserWeb.LegalDocumentLiveTest do
   import Phoenix.LiveViewTest
   import DocumentParser.LegalDocumentsFixtures
 
-  @create_attrs %{file_name: "some file_name", parsed_strings: "some parsed_strings"}
-  @update_attrs %{file_name: "some updated file_name", parsed_strings: "some updated parsed_strings"}
-  @invalid_attrs %{file_name: nil, parsed_strings: nil}
+  @create_attrs %{file_name: "some file_name"}
+  @invalid_attrs %{file_name: nil}
+  # @update_attrs %{file_name: "some updated file_name"}
+
+  @fixtures_path "/test/support/fixtures/"
 
   defp create_legal_document(_) do
     legal_document = legal_document_fixture()
@@ -35,6 +37,16 @@ defmodule DocumentParserWeb.LegalDocumentLiveTest do
              |> form("#legal_document-form", legal_document: @invalid_attrs)
              |> render_change() =~ "can&#39;t be blank"
 
+      file_path = File.cwd!() <> @fixtures_path <> "C.xml"
+
+      index_live
+      |> file_input("#legal_document-form", :file, [%{
+        name: "C.xml",
+        content: File.read!(file_path),
+        type: "text/xml"
+      }])
+      |> render_upload("C.xml")
+
       assert index_live
              |> form("#legal_document-form", legal_document: @create_attrs)
              |> render_submit()
@@ -44,30 +56,33 @@ defmodule DocumentParserWeb.LegalDocumentLiveTest do
       html = render(index_live)
       assert html =~ "Legal document created successfully"
       assert html =~ "some file_name"
+      assert html =~ "ALBA ALVARADO"
+      assert html =~ "LAGUARDIA ENTERPRISES INC"
     end
 
-    test "updates legal_document in listing", %{conn: conn, legal_document: legal_document} do
-      {:ok, index_live, _html} = live(conn, ~p"/legal_documents")
+    # Editing a Legal Document is not supported yet
+    # test "updates legal_document in listing", %{conn: conn, legal_document: legal_document} do
+    #   {:ok, index_live, _html} = live(conn, ~p"/legal_documents")
 
-      assert index_live |> element("#legal_documents-#{legal_document.id} a", "Edit") |> render_click() =~
-               "Edit Legal document"
+    #   assert index_live |> element("#legal_documents-#{legal_document.id} a", "Edit") |> render_click() =~
+    #            "Edit Legal document"
 
-      assert_patch(index_live, ~p"/legal_documents/#{legal_document}/edit")
+    #   assert_patch(index_live, ~p"/legal_documents/#{legal_document}/edit")
 
-      assert index_live
-             |> form("#legal_document-form", legal_document: @invalid_attrs)
-             |> render_change() =~ "can&#39;t be blank"
+    #   assert index_live
+    #          |> form("#legal_document-form", legal_document: @invalid_attrs)
+    #          |> render_change() =~ "can&#39;t be blank"
 
-      assert index_live
-             |> form("#legal_document-form", legal_document: @update_attrs)
-             |> render_submit()
+    #   assert index_live
+    #          |> form("#legal_document-form", legal_document: @update_attrs)
+    #          |> render_submit()
 
-      assert_patch(index_live, ~p"/legal_documents")
+    #   assert_patch(index_live, ~p"/legal_documents")
 
-      html = render(index_live)
-      assert html =~ "Legal document updated successfully"
-      assert html =~ "some updated file_name"
-    end
+    #   html = render(index_live)
+    #   assert html =~ "Legal document updated successfully"
+    #   assert html =~ "some updated file_name"
+    # end
 
     test "deletes legal_document in listing", %{conn: conn, legal_document: legal_document} do
       {:ok, index_live, _html} = live(conn, ~p"/legal_documents")
@@ -87,27 +102,28 @@ defmodule DocumentParserWeb.LegalDocumentLiveTest do
       assert html =~ legal_document.file_name
     end
 
-    test "updates legal_document within modal", %{conn: conn, legal_document: legal_document} do
-      {:ok, show_live, _html} = live(conn, ~p"/legal_documents/#{legal_document}")
+    # Editing a Legal Document is not supported yet
+    # test "updates legal_document within modal", %{conn: conn, legal_document: legal_document} do
+    #   {:ok, show_live, _html} = live(conn, ~p"/legal_documents/#{legal_document}")
 
-      assert show_live |> element("a", "Edit") |> render_click() =~
-               "Edit Legal document"
+    #   assert show_live |> element("a", "Edit") |> render_click() =~
+    #            "Edit Legal document"
 
-      assert_patch(show_live, ~p"/legal_documents/#{legal_document}/show/edit")
+    #   assert_patch(show_live, ~p"/legal_documents/#{legal_document}/show/edit")
 
-      assert show_live
-             |> form("#legal_document-form", legal_document: @invalid_attrs)
-             |> render_change() =~ "can&#39;t be blank"
+    #   assert show_live
+    #          |> form("#legal_document-form", legal_document: @invalid_attrs)
+    #          |> render_change() =~ "can&#39;t be blank"
 
-      assert show_live
-             |> form("#legal_document-form", legal_document: @update_attrs)
-             |> render_submit()
+    #   assert show_live
+    #          |> form("#legal_document-form", legal_document: @update_attrs)
+    #          |> render_submit()
 
-      assert_patch(show_live, ~p"/legal_documents/#{legal_document}")
+    #   assert_patch(show_live, ~p"/legal_documents/#{legal_document}")
 
-      html = render(show_live)
-      assert html =~ "Legal document updated successfully"
-      assert html =~ "some updated file_name"
-    end
+    #   html = render(show_live)
+    #   assert html =~ "Legal document updated successfully"
+    #   assert html =~ "some updated file_name"
+    # end
   end
 end

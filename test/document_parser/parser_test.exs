@@ -18,7 +18,7 @@ defmodule DocumentParser.ParserTest do
 
     @tag insert_phrases: true
     test "returns plaintiff and defendant using global filters" do
-      filepath = File.cwd!() <> @fixtures_path <> "A.xml"
+      filepath = get_fixture_filepath("A.xml")
 
       %{plaintiffs: plaintiffs, defendants: defendants} =
         Parser.V1.get_plaintiffs_and_defendants(filepath)
@@ -29,7 +29,7 @@ defmodule DocumentParser.ParserTest do
 
     @tag insert_phrases: false
     test "returns wrong plaintiff without global filters" do
-      filepath = File.cwd!() <> @fixtures_path <> "A.xml"
+      filepath = get_fixture_filepath("A.xml")
 
       %{plaintiffs: plaintiffs, defendants: defendants} =
         Parser.V1.get_plaintiffs_and_defendants(filepath)
@@ -41,7 +41,7 @@ defmodule DocumentParser.ParserTest do
 
   describe "Parsing test Document B" do
     test "returns plaintiff and defendant using filter opts" do
-      filepath = File.cwd!() <> @fixtures_path <> "B.xml"
+      filepath = get_fixture_filepath("B.xml")
       opts = %{filter_phrases: ["COMPLAINT", "FOR", "DAMAGES"]}
 
       %{plaintiffs: plaintiffs, defendants: defendants} =
@@ -52,7 +52,7 @@ defmodule DocumentParser.ParserTest do
     end
 
     test "returns wrong plaintiff without filter_phrases" do
-      filepath = File.cwd!() <> @fixtures_path <> "B.xml"
+      filepath = get_fixture_filepath("B.xml")
 
       %{plaintiffs: plaintiffs, defendants: defendants} =
         Parser.V1.get_plaintiffs_and_defendants(filepath)
@@ -64,7 +64,7 @@ defmodule DocumentParser.ParserTest do
 
   describe "Parsing test Document C" do
     test "returns plaintiff and defendant" do
-      filepath = File.cwd!() <> @fixtures_path <> "C.xml"
+      filepath = get_fixture_filepath("C.xml")
 
       %{plaintiffs: plaintiffs, defendants: defendants} =
         Parser.V1.get_plaintiffs_and_defendants(filepath)
@@ -74,7 +74,7 @@ defmodule DocumentParser.ParserTest do
     end
 
     test "returns additional defendant with increased search_breadth" do
-      filepath = File.cwd!() <> @fixtures_path <> "C.xml"
+      filepath = get_fixture_filepath("C.xml")
 
       opts = %{defendant_search_breadth_override: 2}
 
@@ -84,5 +84,9 @@ defmodule DocumentParser.ParserTest do
       assert plaintiffs == ["ALBA ALVARADO"]
       assert defendants == ["LAGUARDIA ENTERPRISES INC", "SONSONATE"]
     end
+  end
+
+  defp get_fixture_filepath(file_name) do
+    File.cwd!() <> @fixtures_path <> file_name
   end
 end
