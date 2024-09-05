@@ -86,6 +86,8 @@ defmodule DocumentParserWeb do
       # Core UI components and translation
       import DocumentParserWeb.CoreComponents
       import DocumentParserWeb.Gettext
+      import DocumentParserWeb.Components.Common.Slider
+      import DocumentParserWeb.Components.Common.Opponents
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS
