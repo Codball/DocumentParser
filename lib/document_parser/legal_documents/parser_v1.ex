@@ -7,7 +7,7 @@ defmodule DocumentParser.LegalDocuments.Parser.V1 do
     ~c"v."
   ]
 
-  @max_search_breadth 15
+  @max_search_breadth 21
 
   @moduledoc """
   Provides functions to extract and identify plaintiffs and defendants from a list of character lists or a file.
@@ -32,10 +32,10 @@ defmodule DocumentParser.LegalDocuments.Parser.V1 do
 
   ## Examples
 
-      iex> YourModuleName.get_plaintiffs_and_defendants(["MOLLY SMITH", "vs", "COMPANY LLC"], %{search_breadth_override: 5})
+      iex> DocumentParser.LegalDocuments.Parser.V1.get_plaintiffs_and_defendants(["MOLLY SMITH", "vs", "COMPANY LLC"], %{search_breadth_override: 5})
       %{plaintiffs: ["MOLLY SMITH"], defendants: ["COMPANY LLC"], charlists: ["MOLLY SMITH", "vs", "COMPANY LLC"]}
 
-      iex> YourModuleName.get_plaintiffs_and_defendants("path/to/file.txt", %{})
+      iex> DocumentParser.LegalDocuments.Parser.V1.get_plaintiffs_and_defendants("path/to/file.txt", %{})
       %{plaintiffs: ["Plaintiff A"], defendants: ["Defendant B"], charlists: ["Plaintiff A", "Defendant B"]}
   """
 
@@ -78,7 +78,7 @@ defmodule DocumentParser.LegalDocuments.Parser.V1 do
   end
 
   defp find_plaintiffs_and_defendants(charlists, midpoint_index, opts) do
-    filter_phrases = DocumentParser.FilterPhrases.list_enabled_filter_phrases()
+    filter_phrases = DocumentParser.FilterPhrases.list_enabled_filter_phrases() ++ Map.get(opts, :filter_phrases, [])
 
     plaintiff_search_breadth = Map.get(opts, :plaintiff_search_breadth_override, 1)
 
