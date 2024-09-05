@@ -14,6 +14,12 @@ defmodule DocumentParserWeb.Router do
     plug :accepts, ["json"]
   end
 
+  scope "/api", DocumentParserWeb do
+    pipe_through :api
+
+    resources "/legal_documents", LegalDocumentController, except: [:new, :edit]
+  end
+
   scope "/", DocumentParserWeb do
     pipe_through :browser
 
