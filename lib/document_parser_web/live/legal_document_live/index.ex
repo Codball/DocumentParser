@@ -34,7 +34,7 @@ defmodule DocumentParserWeb.LegalDocumentLive.Index do
 
   @impl true
   def handle_info({DocumentParserWeb.LegalDocumentLive.FormComponent, {:saved, legal_document}}, socket) do
-    preloaded_legal_document = DocumentParser.Repo.preload(legal_document, [:plaintiffs, :defendants])
+    preloaded_legal_document = DocumentParser.Repo.preload(legal_document, [:entities, :plaintiffs, :defendants])
 
     {:noreply, stream_insert(socket, :legal_documents, preloaded_legal_document)}
   end

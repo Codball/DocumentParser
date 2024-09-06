@@ -3,8 +3,10 @@ defmodule DocumentParser.Repo.Migrations.CreateLegalDocuments do
 
   def change do
     create table(:legal_documents) do
-      add :file_name, :string
-      add :parsed_strings, :text
+      add :file_name, :string, null: false
+      add :parsed_strings, :text, null: false
+      add :plaintiff_search_breadth, :integer, null: false
+      add :defendant_search_breadth, :integer, null: false
 
       timestamps(type: :utc_datetime)
     end

@@ -19,7 +19,7 @@ defmodule DocumentParser.LegalDocuments do
   """
   def list_legal_documents do
     LegalDocument
-    |> preload([ld], [:plaintiffs, :defendants])
+    |> preload([ld], [:entities, :plaintiffs, :defendants])
     |> Repo.all()
   end
 
@@ -40,7 +40,7 @@ defmodule DocumentParser.LegalDocuments do
   def get_legal_document!(id) do
     LegalDocument
     |> where([ld], ld.id == ^id)
-    |> preload([ld], [:plaintiffs, :defendants])
+    |> preload([ld], [:entities, :plaintiffs, :defendants])
     |> Repo.one!()
   end
 

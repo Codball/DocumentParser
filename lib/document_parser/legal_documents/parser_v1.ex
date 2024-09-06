@@ -57,16 +57,17 @@ defmodule DocumentParser.LegalDocuments.Parser.V1 do
     process_charlists(charlists, opts)
   end
 
+  def read_file(filepath) do
+    filepath
+    |> File.read!()
+    |> xpath(~x"//block/text//formatting/text()"l)
+  end
+
+
   defp process_charlists(charlists, opts) do
     midpoint_index = find_opponent_midpoint_index(charlists)
 
     find_plaintiffs_and_defendants(charlists, midpoint_index, opts)
-  end
-
-  defp read_file(filepath) do
-    filepath
-    |> File.read!()
-    |> xpath(~x"//block/text//formatting/text()"l)
   end
 
   defp find_opponent_midpoint_index(charlists) do

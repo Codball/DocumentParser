@@ -40,7 +40,9 @@ defmodule DocumentParserWeb.LegalDocumentController do
     legal_document_params = %{
       file_name: document_name,
       parsed_strings: Jason.encode!(charlists),
-      entities: plaintiff_entities ++ defendant_entities
+      entities: plaintiff_entities ++ defendant_entities,
+      plaintiff_search_breadth: attempted_plaintiff_search_breadth,
+      defendant_search_breadth: attempted_defendant_search_breadth
     }
 
     with {:ok, %LegalDocument{} = legal_document} <-

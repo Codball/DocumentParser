@@ -1,4 +1,5 @@
 defmodule DocumentParserWeb.LegalDocumentLive.FormComponent do
+  alias DocumentParser.Entity
   use DocumentParserWeb, :live_component
 
   alias DocumentParser.LegalDocuments
@@ -13,15 +14,14 @@ defmodule DocumentParserWeb.LegalDocumentLive.FormComponent do
        progress: &handle_progress/3,
        auto_upload: true
      )
-     |> assign(:plaintiff_search_breadth, "1")
-     |> assign(:defendant_search_breadth, "1")
-     |> assign(:uploaded, false)
+     |> assign(:plaintiff_search_breadth, "0")
+     |> assign(:defendant_search_breadth, "0")
      |> assign(:filter_phrases, "")}
   end
 
   @impl true
   def render(assigns) do
-    if assigns.uploaded do
+    if Map.get(assigns, :uploaded, false) do
       parsed_form(assigns)
     else
       upload_form(assigns)
@@ -64,11 +64,11 @@ defmodule DocumentParserWeb.LegalDocumentLive.FormComponent do
         <.slider value={@defendant_search_breadth} title="Defendant Search Breadth" name="defendant" />
         <.opponents
           opponents={@plaintiffs}
-          title={"Plaintiff(s) = (search breadth: #{@attempted_plaintiff_search_breadth})"}
+          title={"Plaintiff(s) -------> (search breadth: #{@attempted_plaintiff_search_breadth})"}
         />
         <.opponents
           opponents={@defendants}
-          title={"Defendant(s) = (search breadth: #{@attempted_defendant_search_breadth})"}
+          title={"Defendant(s) -------> (search breadth: #{@attempted_defendant_search_breadth})"}
         />
         <div>
           <p>
@@ -102,6 +102,23 @@ defmodule DocumentParserWeb.LegalDocumentLive.FormComponent do
   end
 
   @impl true
+  def update(%{legal_document: legal_document, action: :edit} = assigns, socket) do
+    charlists = Jason.decode!(legal_document.parsed_strings)
+
+    {:ok,
+     socket
+     |> assign(assigns)
+     |> assign(:uploaded, true)
+     |> assign(:charlists, charlists)
+     |> assign(:plaintiffs, legal_document.plaintiffs)
+     |> assign(:defendants, legal_document.defendants)
+     |> assign(:attempted_plaintiff_search_breadth, legal_document.plaintiff_search_breadth)
+     |> assign(:attempted_defendant_search_breadth, legal_document.defendant_search_breadth)
+     |> assign_new(:form, fn ->
+       to_form(LegalDocuments.change_legal_document(legal_document))
+     end)}
+  end
+
   def update(%{legal_document: legal_document} = assigns, socket) do
     {:ok,
      socket
@@ -121,21 +138,30 @@ defmodule DocumentParserWeb.LegalDocumentLive.FormComponent do
 
   def handle_event("save", %{"legal_document" => legal_document}, socket) do
     plaintiffs =
-      Enum.map(socket.assigns.plaintiffs, fn plaintiff ->
-        %{name: plaintiff, type: "plaintiff"}
+      Enum.map(socket.assigns.plaintiffs, fn
+        %Entity{id: id, name: name} -> %{id: id, name: name, type: "plaintiff"}
+        plaintiff -> %{name: plaintiff, type: "plaintiff"}
       end)
 
     defendants =
-      Enum.map(socket.assigns.defendants, fn defendant ->
-        %{name: defendant, type: "defendant"}
+      Enum.map(socket.assigns.defendants, fn
+        %Entity{id: id, name: name} -> %{id: id, name: name, type: "defendant"}
+        defendant -> %{name: defendant, type: "defendant"}
       end)
-
-    entities = plaintiffs ++ defendants
 
     legal_document_params =
       legal_document
-      |> Map.put("entities", entities)
+      |> Map.put("plaintiffs", plaintiffs)
+      |> Map.put("defendants", defendants)
       |> Map.put("parsed_strings", Jason.encode!(socket.assigns.charlists))
+      |> Map.put(
+        "plaintiff_search_breadth",
+        socket.assigns.attempted_plaintiff_search_breadth
+      )
+      |> Map.put(
+        "defendant_search_breadth",
+        socket.assigns.attempted_defendant_search_breadth
+      )
 
     save_legal_document(socket, socket.assigns.action, legal_document_params)
   end
@@ -193,12 +219,12 @@ defmodule DocumentParserWeb.LegalDocumentLive.FormComponent do
       {:noreply,
        socket
        |> put_flash(:info, "file upload complete")
+       |> assign(:uploaded, true)
        |> assign(:charlists, charlists)
        |> assign(:attempted_plaintiff_search_breadth, attempted_plaintiff_search_breadth)
        |> assign(:attempted_defendant_search_breadth, attempted_defendant_search_breadth)
        |> assign(:plaintiffs, plaintiffs)
-       |> assign(:defendants, defendants)
-       |> assign(:uploaded, true)}
+       |> assign(:defendants, defendants)}
     else
       {:noreply, socket}
     end
