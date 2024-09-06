@@ -12,7 +12,7 @@ defmodule DocumentParser.LegalDocumentsFixtures do
       attrs
       |> Enum.into(%{
         file_name: "some file_name",
-        parsed_strings: "some parsed_strings"
+        parsed_strings: "[[25], [45]]"
       })
       |> DocumentParser.LegalDocuments.create_legal_document()
 

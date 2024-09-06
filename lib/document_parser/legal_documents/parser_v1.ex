@@ -32,11 +32,11 @@ defmodule DocumentParser.LegalDocuments.Parser.V1 do
 
   ## Examples
 
-      iex> DocumentParser.LegalDocuments.Parser.V1.get_plaintiffs_and_defendants(["MOLLY SMITH", "vs", "COMPANY LLC"], %{search_breadth_override: 5})
+      iex> DocumentParser.LegalDocuments.Parser.V1.get_plaintiffs_and_defendants(["MOLLY SMITH", "vs", "COMPANY LLC"], %{plaintiff_search_breadth_override: 5})
       %{plaintiffs: ["MOLLY SMITH"], defendants: ["COMPANY LLC"], charlists: ["MOLLY SMITH", "vs", "COMPANY LLC"]}
 
       iex> DocumentParser.LegalDocuments.Parser.V1.get_plaintiffs_and_defendants("path/to/file.txt", %{})
-      %{plaintiffs: ["Plaintiff A"], defendants: ["Defendant B"], charlists: ["Plaintiff A", "Defendant B"]}
+      %{plaintiffs: ["Plaintiff A"], defendants: ["Defendant B"], charlists: ["Plaintiff A", "v.", "Defendant B"]}
   """
 
   @spec get_plaintiffs_and_defendants(list(char()) | String.t(), map()) :: %{
@@ -75,6 +75,16 @@ defmodule DocumentParser.LegalDocuments.Parser.V1 do
         :lists.prefix(delimiter, charlist)
       end)
     end)
+  end
+
+  defp find_plaintiffs_and_defendants(charlists, nil, _opts) do
+    %{
+      charlists: charlists,
+      plaintiffs: [],
+      defendants: [],
+      plaintiff_search_breadth: 0,
+      defendant_search_breadth: 0
+    }
   end
 
   defp find_plaintiffs_and_defendants(charlists, midpoint_index, opts) do
