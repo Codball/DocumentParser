@@ -9,7 +9,7 @@ defmodule DocumentParserWeb.Components.Common.Slider do
       <.input
         id={@title}
         type="range"
-        min={1}
+        min={0}
         max={20}
         value={@value}
         phx-change="update_slider"

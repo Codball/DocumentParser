@@ -23,7 +23,7 @@ defmodule DocumentParserWeb.Router do
   scope "/", DocumentParserWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live "/", LegalDocumentLive.Index, :index
 
     live "/legal_documents", LegalDocumentLive.Index, :index
     live "/legal_documents/new", LegalDocumentLive.Index, :new
