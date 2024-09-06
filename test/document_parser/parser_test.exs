@@ -76,7 +76,7 @@ defmodule DocumentParser.ParserTest do
     test "returns additional defendant with increased search_breadth" do
       filepath = get_fixture_filepath("C.xml")
 
-      opts = %{defendant_search_breadth_override: 2}
+      opts = %{defendant_search_breadth_override: 1}
 
       %{plaintiffs: plaintiffs, defendants: defendants} =
         Parser.V1.get_plaintiffs_and_defendants(filepath, opts)

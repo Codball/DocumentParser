@@ -62,8 +62,8 @@ defmodule DocumentParserWeb.LegalDocumentControllerTest do
       assert %{
                "id" => ^id,
                "file_name" => "some updated file_name",
-               "plaintiffs" => [],
-               "defendants" => []
+               "plaintiffs" => ["ALBA ALVARADO"],
+               "defendants" => ["LAGUARDIA ENTERPRISES INC"]
              } = json_response(conn, 200)["data"]
     end
 

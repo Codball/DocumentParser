@@ -6,7 +6,7 @@ defmodule DocumentParserWeb.LegalDocumentLiveTest do
 
   @create_attrs %{file_name: "some file_name"}
   @invalid_attrs %{file_name: nil}
-  # @update_attrs %{file_name: "some updated file_name"}
+  @update_attrs %{file_name: "some updated file_name"}
 
   @fixtures_path "/test/support/fixtures/"
 
@@ -60,29 +60,34 @@ defmodule DocumentParserWeb.LegalDocumentLiveTest do
       assert html =~ "LAGUARDIA ENTERPRISES INC"
     end
 
-    # Editing a Legal Document is not supported yet
-    # test "updates legal_document in listing", %{conn: conn, legal_document: legal_document} do
-    #   {:ok, index_live, _html} = live(conn, ~p"/legal_documents")
+    test "updates legal_document in listing", %{conn: conn, legal_document: legal_document} do
+      {:ok, index_live, _html} = live(conn, ~p"/legal_documents")
 
-    #   assert index_live |> element("#legal_documents-#{legal_document.id} a", "Edit") |> render_click() =~
-    #            "Edit Legal document"
+      assert index_live |> element("#legal_documents-#{legal_document.id} a", "Edit") |> render_click() =~
+               "Edit Legal document"
 
-    #   assert_patch(index_live, ~p"/legal_documents/#{legal_document}/edit")
+      assert_patch(index_live, ~p"/legal_documents/#{legal_document}/edit")
 
-    #   assert index_live
-    #          |> form("#legal_document-form", legal_document: @invalid_attrs)
-    #          |> render_change() =~ "can&#39;t be blank"
+      assert index_live
+             |> form("#legal_document-form", legal_document: @invalid_attrs)
+             |> render_change() =~ "can&#39;t be blank"
 
-    #   assert index_live
-    #          |> form("#legal_document-form", legal_document: @update_attrs)
-    #          |> render_submit()
+      index_live |> element("button", "Retry") |> render_click()
 
-    #   assert_patch(index_live, ~p"/legal_documents")
+      assert index_live
+             |> form("#legal_document-form", legal_document: @update_attrs)
+             |> render_submit()
 
-    #   html = render(index_live)
-    #   assert html =~ "Legal document updated successfully"
-    #   assert html =~ "some updated file_name"
-    # end
+      assert_patch(index_live, ~p"/legal_documents")
+
+      {:ok, new_index_live, _html} = live(conn, ~p"/legal_documents")
+
+      html = render(new_index_live)
+      # assert html =~ "Legal document updated successfully"
+      assert html =~ "some updated file_name"
+      assert html =~ "ALBA ALVARADO"
+      assert html =~ "LAGUARDIA ENTERPRISES INC"
+    end
 
     test "deletes legal_document in listing", %{conn: conn, legal_document: legal_document} do
       {:ok, index_live, _html} = live(conn, ~p"/legal_documents")
