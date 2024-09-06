@@ -8,6 +8,7 @@ To start your Phoenix server:
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
 ## User Story (LiveView Frontend)
+https://github.com/user-attachments/assets/29c38f30-2fd4-4b2d-b6e6-250831d90ae4
 1. Visit [`/legal_documents`](http://localhost:4000/legal_documents) and click on the new button
 2. Type in a name for the document and upload an .xml file
 3. Verify plaintiffs and defendants are correct
