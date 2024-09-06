@@ -88,29 +88,31 @@ defmodule DocumentParser.LegalDocuments.Parser.V1 do
   end
 
   defp find_plaintiffs_and_defendants(charlists, midpoint_index, opts) do
-    filter_phrases = DocumentParser.FilterPhrases.list_enabled_filter_phrases() ++ Map.get(opts, :filter_phrases, [])
+    filter_phrases =
+      DocumentParser.FilterPhrases.list_enabled_filter_phrases() ++
+        Map.get(opts, :filter_phrases, [])
 
-    plaintiff_search_breadth = Map.get(opts, :plaintiff_search_breadth_override, 1)
+    plaintiff_search_breadth = Map.get(opts, :plaintiff_search_breadth_override, 0) - 1
 
-    {plaintiffs, attempted_plaintiff_search_breadth} =
-      find_opponents(
-        charlists,
-        midpoint_index,
-        filter_phrases,
-        :plaintiff,
-        plaintiff_search_breadth
-      )
+    plaintiff_config = %{
+      midpoint_index: midpoint_index,
+      filter_phrases: filter_phrases,
+      opponent_type: :plaintiff,
+      search_breadth_override: plaintiff_search_breadth
+    }
 
-    defendant_search_breadth = Map.get(opts, :defendant_search_breadth_override, 1)
+    {plaintiffs, attempted_plaintiff_search_breadth} = find_opponents(charlists, plaintiff_config)
 
-    {defendants, attempted_defendant_search_breadth} =
-      find_opponents(
-        charlists,
-        midpoint_index,
-        filter_phrases,
-        :defendant,
-        defendant_search_breadth
-      )
+    defendant_search_breadth = Map.get(opts, :defendant_search_breadth_override, 0) - 1
+
+    defendant_config = %{
+      midpoint_index: midpoint_index,
+      filter_phrases: filter_phrases,
+      opponent_type: :defendant,
+      search_breadth_override: defendant_search_breadth
+    }
+
+    {defendants, attempted_defendant_search_breadth} = find_opponents(charlists, defendant_config)
 
     %{
       charlists: charlists,
@@ -122,57 +124,86 @@ defmodule DocumentParser.LegalDocuments.Parser.V1 do
   end
 
   defp find_opponents(
+         charlists,
+         config,
+         search_breadth \\ 0,
+         opponents \\ []
+       )
+
+  defp find_opponents(
          _charlists,
-         _midpoint_index,
-         _filter_phrases,
-         _opponent_type,
-         search_breadth
+         _config,
+         search_breadth,
+         opponents
        )
        when search_breadth >= @max_search_breadth,
-       do: {[], search_breadth}
+       do: {opponents, search_breadth}
 
-  defp find_opponents(charlists, midpoint_index, filter_phrases, opponent_type, search_breadth) do
-    range = get_opponent_range(opponent_type, midpoint_index, search_breadth)
+  defp find_opponents(
+         charlists,
+         %{
+           midpoint_index: midpoint_index,
+           filter_phrases: filter_phrases,
+           opponent_type: opponent_type,
+         } = config,
+         search_breadth,
+         opponents
+       ) do
+    possible_index =
+      get_next_possible_opponent_index(opponent_type, midpoint_index, search_breadth)
 
     charlists
-    |> Enum.slice(range)
-    |> Enum.map(fn charlist ->
-      Regex.scan(~r/\b[A-Z-]{3,}\b/, to_string(charlist))
-    end)
-    |> filter_scans(filter_phrases)
-    |> case do
-      [] ->
-        find_opponents(
-          charlists,
-          midpoint_index,
-          filter_phrases,
-          opponent_type,
-          search_breadth + 1
-        )
-
-      matches ->
-        {matches, search_breadth}
-    end
+    |> Enum.at(possible_index)
+    |> then(&Regex.scan(~r/\b[A-Z-]{3,}\b/, to_string(&1)))
+    |> filter_scan(filter_phrases)
+    |> handle_match(charlists, config, search_breadth, opponents)
   end
 
-  defp get_opponent_range(:plaintiff, midpoint_index, search_breadth),
-    do: (midpoint_index - search_breadth)..(midpoint_index - 1)
+  defp handle_match("" = _match, charlists, config, search_breadth, opponents) do
+    find_opponents(charlists, config, search_breadth + 1, opponents)
+  end
 
-  defp get_opponent_range(:defendant, midpoint_index, search_breadth),
-    do: (midpoint_index + 1)..(midpoint_index + search_breadth)
+  defp handle_match(
+         match,
+         _charlists,
+         %{search_breadth_override: -1},
+         search_breadth,
+         _opponents
+       ) do
+    {[match], search_breadth}
+  end
 
-  def filter_scans(scans, filter_phrases) do
-    scans
-    |> Enum.map(fn scan ->
-      scan
-      |> List.flatten()
-      |> Enum.filter(fn match ->
-        match not in filter_phrases
-      end)
-      |> Enum.join(" ")
+  defp handle_match(
+         match,
+         charlists,
+         %{search_breadth_override: search_breadth_override} = config,
+         search_breadth,
+         opponents
+       )
+       when search_breadth <= search_breadth_override do
+    find_opponents(charlists, config, search_breadth + 1, opponents ++ [match])
+  end
+
+  defp handle_match(match, _charlists, _config, search_breadth, opponents),
+    do: {opponents ++ [match], search_breadth}
+
+  defp get_next_possible_opponent_index(:plaintiff, midpoint_index, search_breadth) do
+    midpoint_index - search_breadth - 1
+  end
+
+  defp get_next_possible_opponent_index(:defendant, midpoint_index, search_breadth) do
+    midpoint_index + search_breadth + 1
+  end
+
+  def filter_scan(scan, filter_phrases) do
+    scan
+    |> List.flatten()
+    |> Enum.reject(fn match ->
+      match in filter_phrases
     end)
     |> Enum.reject(fn opponent ->
       opponent == [] || opponent == ""
     end)
+    |> Enum.join(" ")
   end
 end
