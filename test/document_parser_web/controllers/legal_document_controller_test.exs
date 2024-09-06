@@ -7,13 +7,15 @@ defmodule DocumentParserWeb.LegalDocumentControllerTest do
 
   @create_attrs %{
     file_name: "some file_name",
-    parsed_strings: "some parsed_strings"
+    parsed_strings: "[[25], [45]]"
   }
   @update_attrs %{
     file_name: "some updated file_name",
-    parsed_strings: "some updated parsed_strings"
+    parsed_strings: "[[25], [45]]"
   }
   @invalid_attrs %{file_name: nil, parsed_strings: nil}
+
+  @fixtures_path "/test/support/fixtures/"
 
   setup %{conn: conn} do
     {:ok, conn: put_req_header(conn, "accept", "application/json")}
@@ -28,7 +30,8 @@ defmodule DocumentParserWeb.LegalDocumentControllerTest do
 
   describe "create legal_document" do
     test "renders legal_document when data is valid", %{conn: conn} do
-      conn = post(conn, ~p"/api/legal_documents", legal_document: @create_attrs)
+      file_path = File.cwd!() <> @fixtures_path <> "C.xml"
+      conn = post(conn, ~p"/api/legal_documents", document_name: @create_attrs.file_name, file: %Plug.Upload{path: file_path}, opts: "{}")
       assert %{"id" => id} = json_response(conn, 201)["data"]
 
       conn = get(conn, ~p"/api/legal_documents/#{id}")
@@ -36,7 +39,8 @@ defmodule DocumentParserWeb.LegalDocumentControllerTest do
       assert %{
                "id" => ^id,
                "file_name" => "some file_name",
-               "parsed_strings" => "some parsed_strings"
+               "plaintiffs" => ["ALBA ALVARADO"],
+               "defendants" => ["LAGUARDIA ENTERPRISES INC"],
              } = json_response(conn, 200)["data"]
     end
 
@@ -50,7 +54,7 @@ defmodule DocumentParserWeb.LegalDocumentControllerTest do
     setup [:create_legal_document]
 
     test "renders legal_document when data is valid", %{conn: conn, legal_document: %LegalDocument{id: id} = legal_document} do
-      conn = put(conn, ~p"/api/legal_documents/#{legal_document}", legal_document: @update_attrs)
+      conn = put(conn, ~p"/api/legal_documents/#{legal_document}", document_name: @update_attrs.file_name, opts: "{}")
       assert %{"id" => ^id} = json_response(conn, 200)["data"]
 
       conn = get(conn, ~p"/api/legal_documents/#{id}")
@@ -58,12 +62,13 @@ defmodule DocumentParserWeb.LegalDocumentControllerTest do
       assert %{
                "id" => ^id,
                "file_name" => "some updated file_name",
-               "parsed_strings" => "some updated parsed_strings"
+               "plaintiffs" => [],
+               "defendants" => []
              } = json_response(conn, 200)["data"]
     end
 
     test "renders errors when data is invalid", %{conn: conn, legal_document: legal_document} do
-      conn = put(conn, ~p"/api/legal_documents/#{legal_document}", legal_document: @invalid_attrs)
+      conn = put(conn, ~p"/api/legal_documents/#{legal_document}", document_name: nil, opts: "{}")
       assert json_response(conn, 422)["errors"] != %{}
     end
   end
@@ -82,7 +87,7 @@ defmodule DocumentParserWeb.LegalDocumentControllerTest do
   end
 
   defp create_legal_document(_) do
-    legal_document = legal_document_fixture()
+    legal_document = legal_document_fixture() |> DocumentParser.Repo.preload([:plaintiffs, :defendants])
     %{legal_document: legal_document}
   end
 end
