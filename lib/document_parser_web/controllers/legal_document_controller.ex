@@ -61,15 +61,13 @@ defmodule DocumentParserWeb.LegalDocumentController do
     end
   end
 
-  def create(conn, %{"legal_document" => legal_document_params}) do
-    with {:ok, %LegalDocument{} = legal_document} <-
-           LegalDocuments.create_legal_document(legal_document_params) do
-      conn
-      |> put_status(:created)
-      |> put_resp_header("location", ~p"/api/legal_documents/#{legal_document}")
-      |> render(:show, legal_document: legal_document)
-    end
-  end
+  def create(conn, %{"document_name" => document_name, "file" => %Plug.Upload{path: path}}),
+    do:
+      create(conn, %{
+        "document_name" => document_name,
+        "file" => %Plug.Upload{path: path},
+        "opts" => "{}"
+      })
 
   def show(conn, %{"id" => id}) do
     legal_document = LegalDocuments.get_legal_document!(id)
@@ -77,7 +75,9 @@ defmodule DocumentParserWeb.LegalDocumentController do
   end
 
   def update(conn, %{"id" => id, "document_name" => document_name, "opts" => opts_json}) do
-    legal_document = LegalDocuments.get_legal_document!(id) |> DocumentParser.Repo.preload(:entities)
+    legal_document =
+      LegalDocuments.get_legal_document!(id) |> DocumentParser.Repo.preload(:entities)
+
     charlists = Jason.decode!(legal_document.parsed_strings)
     opts = parse_opts(opts_json)
 
@@ -116,6 +116,9 @@ defmodule DocumentParserWeb.LegalDocumentController do
       )
     end
   end
+
+  def update(conn, %{"id" => id, "document_name" => document_name}),
+    do: update(conn, %{"id" => id, "document_name" => document_name, "opts" => "{}"})
 
   def delete(conn, %{"id" => id}) do
     legal_document = LegalDocuments.get_legal_document!(id)
