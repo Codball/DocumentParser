@@ -117,7 +117,6 @@ The algorithm (`DocumentParser.LegalDocuments.Parser.V1`) focuses on finding the
 ## Future Features
 * Include more versions of the parser with different algorithms that provide results on different documents that don't have the delimiter
 * Allow user to edit the parsed plaintiffs or defendants manually in case there are small changes
-* Update the LegalDocument LiveView "edit" route to use the existing parsed_strings field to allow the user to rerun the parser without reuploading the document
 * Allow user to upload the pdfs/images that represent the .xml structure being parsed to be displayed on the `show` page
 
 ## Thoughts in hindsight
