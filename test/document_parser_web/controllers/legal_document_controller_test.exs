@@ -13,7 +13,6 @@ defmodule DocumentParserWeb.LegalDocumentControllerTest do
     file_name: "some updated file_name",
     parsed_strings: "[[25], [45]]"
   }
-  @invalid_attrs %{file_name: nil, parsed_strings: nil}
 
   @fixtures_path "/test/support/fixtures/"
 
@@ -45,7 +44,7 @@ defmodule DocumentParserWeb.LegalDocumentControllerTest do
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
-      conn = post(conn, ~p"/api/legal_documents", legal_document: @invalid_attrs)
+      conn = post(conn, ~p"/api/legal_documents", document_name: nil, file: "")
       assert json_response(conn, 422)["errors"] != %{}
     end
   end

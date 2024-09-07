@@ -69,6 +69,15 @@ defmodule DocumentParserWeb.LegalDocumentController do
         "opts" => "{}"
       })
 
+  def create(conn, _params) do
+    conn
+    |> put_status(:unprocessable_entity)
+    |> json(%{
+      error:
+        "Invalid parameters. 'document_name' must be a string and 'file' must be a an uploaded .xml."
+    })
+  end
+
   def show(conn, %{"id" => id}) do
     legal_document = LegalDocuments.get_legal_document!(id)
     render(conn, :show, legal_document: legal_document)
