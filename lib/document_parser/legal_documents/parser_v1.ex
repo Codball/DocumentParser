@@ -93,7 +93,7 @@ defmodule DocumentParser.LegalDocuments.Parser.V1 do
       DocumentParser.FilterPhrases.list_enabled_filter_phrases() ++
         Map.get(opts, :filter_phrases, [])
 
-    plaintiff_search_breadth = Map.get(opts, :plaintiff_search_breadth_override, 0) - 1
+    plaintiff_search_breadth = Map.get(opts, :plaintiff_search_breadth_override, 0)
 
     plaintiff_config = %{
       midpoint_index: midpoint_index,
@@ -104,7 +104,7 @@ defmodule DocumentParser.LegalDocuments.Parser.V1 do
 
     {plaintiffs, attempted_plaintiff_search_breadth} = find_opponents(charlists, plaintiff_config)
 
-    defendant_search_breadth = Map.get(opts, :defendant_search_breadth_override, 0) - 1
+    defendant_search_breadth = Map.get(opts, :defendant_search_breadth_override, 0)
 
     defendant_config = %{
       midpoint_index: midpoint_index,
@@ -181,7 +181,7 @@ defmodule DocumentParser.LegalDocuments.Parser.V1 do
          search_breadth,
          opponents
        )
-       when search_breadth <= search_breadth_override do
+       when search_breadth < search_breadth_override do
     find_opponents(charlists, config, search_breadth + 1, opponents ++ [match])
   end
 
@@ -189,11 +189,11 @@ defmodule DocumentParser.LegalDocuments.Parser.V1 do
     do: {opponents ++ [match], search_breadth}
 
   defp get_next_possible_opponent_index(:plaintiff, midpoint_index, search_breadth) do
-    midpoint_index - search_breadth - 1
+    midpoint_index - search_breadth
   end
 
   defp get_next_possible_opponent_index(:defendant, midpoint_index, search_breadth) do
-    midpoint_index + search_breadth + 1
+    midpoint_index + search_breadth
   end
 
   def filter_scan(scan, filter_phrases) do
